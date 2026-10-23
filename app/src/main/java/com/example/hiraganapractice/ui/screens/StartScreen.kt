@@ -31,6 +31,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.hiraganapractice.ui.theme.HiraganaPracticeTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -231,5 +233,16 @@ private fun TypeFeatureRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun StartScreenPreview() {
+    HiraganaPracticeTheme {
+        StartScreen(
+            onStartQuiz = {},
+            onOpenStats = {}
+        )
     }
 }
