@@ -31,8 +31,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.hiraganapractice.ui.theme.HiraganaPracticeTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.hiraganapractice.ui.theme.HiraganaPracticeTheme
 
 @Composable
 fun StartScreen(
@@ -93,7 +93,7 @@ fun StartScreen(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "50음도 히라가나를 20문제씩 부담 없이 연습해보세요!",
+                    text = "50음도, 탁음·반탁음 및 요음·촉음까지 총 81자를 완벽 마스터해보세요!",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -106,7 +106,7 @@ fun StartScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     )
                 ) {
                     Column(
@@ -123,19 +123,19 @@ fun StartScreen(
                         TypeFeatureRow(
                             icon = Icons.Default.CheckCircle,
                             title = "1회당 20문항 무작위 출제",
-                            description = "전체 히라가나 46글자 중 20문제가 랜덤으로 선정됩니다."
+                            description = "전체 학습 범위(총 81자) 내에서 20문제가 랜덤으로 선정됩니다."
                         )
 
                         TypeFeatureRow(
                             icon = Icons.Default.Star,
                             title = "유형 1: 발음(로마자) 맞추기",
-                            description = "제시된 히라가나 글자(예: あ)를 보고 올바른 로마자 발음(a, i, u, e)을 4지 선다형에서 고릅니다."
+                            description = "제시된 글자(예: あ, が, きゃ, っ)를 보고 올바른 로마자 발음을 고릅니다."
                         )
 
                         TypeFeatureRow(
                             icon = Icons.Default.Info,
                             title = "유형 2: 글자(히라가나) 맞추기",
-                            description = "제시된 로마자 발음(예: ka)을 보고 올바른 히라가나 글자(か, き, く, け)를 4지 선다형에서 고릅니다."
+                            description = "제시된 로마자 발음(예: a, ga, kya, tsu)을 보고 올바른 글자를 고릅니다."
                         )
                     }
                 }

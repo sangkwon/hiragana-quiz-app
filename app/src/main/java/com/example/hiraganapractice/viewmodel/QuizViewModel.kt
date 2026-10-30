@@ -4,8 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hiraganapractice.data.QuizStatsRepository
+import com.example.hiraganapractice.model.ALL_HIRAGANA_DATA_SET
 import com.example.hiraganapractice.model.CumulativeStats
-import com.example.hiraganapractice.model.HIRAGANA_DATA_SET
 import com.example.hiraganapractice.model.HiraganaItem
 import com.example.hiraganapractice.model.Question
 import com.example.hiraganapractice.model.QuestionType
@@ -54,8 +54,8 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         autoAdvanceJob = null
 
         val generatedQuestions = generateQuestions()
-        _uiState.update {
-            QuizUiState(
+        _uiState.update { state ->
+            state.copy(
                 screenState = ScreenState.QUIZ,
                 questions = generatedQuestions,
                 currentQuestionIndex = 0,
@@ -164,8 +164,8 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         autoAdvanceJob = null
 
         val latestStats = repository.getStats()
-        _uiState.update {
-            QuizUiState(
+        _uiState.update { state ->
+            state.copy(
                 screenState = ScreenState.START,
                 cumulativeStats = latestStats
             )
@@ -178,7 +178,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun generateQuestions(): List<Question> {
-        val shuffledHiragana = HIRAGANA_DATA_SET.shuffled().take(QUIZ_QUESTION_COUNT)
+        val shuffledHiragana = ALL_HIRAGANA_DATA_SET.shuffled().take(QUIZ_QUESTION_COUNT)
 
         return shuffledHiragana.mapIndexed { index, targetItem ->
             val questionType = if (Random.nextBoolean()) {
@@ -227,7 +227,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun generateDistractors(target: HiraganaItem, type: QuestionType): List<String> {
-        val candidates = HIRAGANA_DATA_SET.filter { it != target }
+        val candidates = ALL_HIRAGANA_DATA_SET.filter { it != target }
         val randomCandidates = candidates.shuffled().take(3)
 
         return when (type) {
