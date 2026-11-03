@@ -63,8 +63,7 @@ fun StartScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -190,14 +189,8 @@ fun StartScreen(
 
                         TypeFeatureRow(
                             icon = Icons.Default.Star,
-                            title = "유형 1: 발음(로마자) 맞추기",
-                            description = "제시된 글자(예: あ, が, きゃ, っ)를 보고 올바른 로마자 발음을 고릅니다."
-                        )
-
-                        TypeFeatureRow(
-                            icon = Icons.Default.Info,
-                            title = "유형 2: 글자(히라가나) 맞추기",
-                            description = "제시된 로마자 발음(예: a, ga, kya, tsu)을 보고 올바른 글자를 고릅니다."
+                            title = "유형 1 & 유형 2",
+                            description = "글자 보고 로마자 맞추기 / 로마자 보고 글자 맞추기"
                         )
                     }
                 }
