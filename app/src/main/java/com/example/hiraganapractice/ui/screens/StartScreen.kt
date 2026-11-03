@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,6 +33,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,10 +49,13 @@ import com.example.hiraganapractice.ui.theme.HiraganaPracticeTheme
 
 @Composable
 fun StartScreen(
-    onStartQuiz: () -> Unit,
+    initialQuestionCount: Int = 20,
+    onStartQuiz: (Int) -> Unit,
     onOpenStats: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var selectedQuestionCount by remember(initialQuestionCount) { mutableStateOf(initialQuestionCount) }
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -81,7 +90,7 @@ fun StartScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "히라가나 퀴즈 연습",
@@ -90,16 +99,69 @@ fun StartScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "50음도, 탁음·반탁음 및 요음·촉음까지 총 81자를 완벽 마스터해보세요!",
+                    text = "50음도, 탁음·반탁음 및 요음·촉음까지 총 81자 마스터!",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Question Count Selection Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "퀴즈당 문항 수 선택",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf(5, 10, 20).forEach { count ->
+                                val isSelected = (selectedQuestionCount == count)
+                                // Proportional weight based on character length ("5문항" vs "10문항"/"20문항")
+                                val buttonWeight = if (count == 5) 0.85f else 1.075f
+                                Button(
+                                    onClick = { selectedQuestionCount = count },
+                                    modifier = Modifier.weight(buttonWeight),
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = "${count}문항",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        softWrap = false,
+                                        maxLines = 1,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Information Card
                 Card(
@@ -111,7 +173,7 @@ fun StartScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(18.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
                             text = "퀴즈 안내",
@@ -122,8 +184,8 @@ fun StartScreen(
 
                         TypeFeatureRow(
                             icon = Icons.Default.CheckCircle,
-                            title = "1회당 20문항 무작위 출제",
-                            description = "전체 학습 범위(총 81자) 내에서 20문제가 랜덤으로 선정됩니다."
+                            title = "선택한 문항 수만큼 무작위 출제",
+                            description = "전체 학습 범위(총 81자) 내에서 랜덤으로 선정됩니다."
                         )
 
                         TypeFeatureRow(
@@ -149,7 +211,7 @@ fun StartScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
-                    onClick = onStartQuiz,
+                    onClick = { onStartQuiz(selectedQuestionCount) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp),
@@ -160,7 +222,7 @@ fun StartScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "퀴즈 시작하기 (20문항)",
+                            text = "퀴즈 시작하기 (${selectedQuestionCount}문항)",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -241,6 +303,7 @@ private fun TypeFeatureRow(
 fun StartScreenPreview() {
     HiraganaPracticeTheme {
         StartScreen(
+            initialQuestionCount = 20,
             onStartQuiz = {},
             onOpenStats = {}
         )

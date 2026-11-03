@@ -42,7 +42,8 @@ fun HiraganaQuizApp(
         when (uiState.screenState) {
             ScreenState.START -> {
                 StartScreen(
-                    onStartQuiz = { viewModel.startQuiz() },
+                    initialQuestionCount = uiState.questionCount,
+                    onStartQuiz = { count -> viewModel.startQuiz(count) },
                     onOpenStats = { viewModel.openStatsScreen() },
                     modifier = Modifier.padding(innerPadding)
                 )

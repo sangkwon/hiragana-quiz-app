@@ -30,7 +30,8 @@ data class QuizUiState(
     val isAnswerSubmitted: Boolean = false,
     val score: Int = 0,
     val answerRecords: List<UserAnswerRecord> = emptyList(),
-    val cumulativeStats: CumulativeStats = CumulativeStats()
+    val cumulativeStats: CumulativeStats = CumulativeStats(),
+    val questionCount: Int = 20
 ) {
     val currentQuestion: Question?
         get() = questions.getOrNull(currentQuestionIndex)
@@ -49,11 +50,11 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
 
     private var autoAdvanceJob: Job? = null
 
-    fun startQuiz() {
+    fun startQuiz(questionCount: Int = _uiState.value.questionCount) {
         autoAdvanceJob?.cancel()
         autoAdvanceJob = null
 
-        val generatedQuestions = generateQuestions()
+        val generatedQuestions = generateQuestions(questionCount)
         _uiState.update { state ->
             state.copy(
                 screenState = ScreenState.QUIZ,
@@ -63,7 +64,8 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 isAnswerSubmitted = false,
                 score = 0,
                 answerRecords = emptyList(),
-                cumulativeStats = repository.getStats()
+                cumulativeStats = repository.getStats(),
+                questionCount = questionCount
             )
         }
     }
@@ -177,8 +179,9 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         ttsHelper.shutdown()
     }
 
-    private fun generateQuestions(): List<Question> {
-        val shuffledHiragana = ALL_HIRAGANA_DATA_SET.shuffled().take(QUIZ_QUESTION_COUNT)
+    private fun generateQuestions(questionCount: Int): List<Question> {
+        val countToTake = minOf(questionCount, ALL_HIRAGANA_DATA_SET.size)
+        val shuffledHiragana = ALL_HIRAGANA_DATA_SET.shuffled().take(countToTake)
 
         return shuffledHiragana.mapIndexed { index, targetItem ->
             val questionType = if (Random.nextBoolean()) {
@@ -237,7 +240,6 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        const val QUIZ_QUESTION_COUNT = 20
         private const val AUTO_ADVANCE_DELAY_MS = 1000L
     }
 }
