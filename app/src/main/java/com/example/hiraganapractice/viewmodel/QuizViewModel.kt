@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hiraganapractice.data.QuizStatsRepository
 import com.example.hiraganapractice.model.ALL_HIRAGANA_DATA_SET
+import com.example.hiraganapractice.model.BASIC_HIRAGANA_DATA_SET
 import com.example.hiraganapractice.model.CumulativeStats
 import com.example.hiraganapractice.model.HiraganaItem
 import com.example.hiraganapractice.model.Question
@@ -31,7 +32,8 @@ data class QuizUiState(
     val score: Int = 0,
     val answerRecords: List<UserAnswerRecord> = emptyList(),
     val cumulativeStats: CumulativeStats = CumulativeStats(),
-    val questionCount: Int = 20
+    val questionCount: Int = 20,
+    val isBasicOnly: Boolean = false
 ) {
     val currentQuestion: Question?
         get() = questions.getOrNull(currentQuestionIndex)
@@ -48,20 +50,25 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(
         QuizUiState(
             cumulativeStats = repository.getStats(),
-            questionCount = repository.getLastQuestionCount()
+            questionCount = repository.getLastQuestionCount(),
+            isBasicOnly = repository.getLastIsBasicOnly()
         )
     )
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
     private var autoAdvanceJob: Job? = null
 
-    fun startQuiz(questionCount: Int = _uiState.value.questionCount) {
+    fun startQuiz(
+        questionCount: Int = _uiState.value.questionCount,
+        isBasicOnly: Boolean = _uiState.value.isBasicOnly
+    ) {
         autoAdvanceJob?.cancel()
         autoAdvanceJob = null
 
         repository.saveLastQuestionCount(questionCount)
+        repository.saveLastIsBasicOnly(isBasicOnly)
 
-        val generatedQuestions = generateQuestions(questionCount)
+        val generatedQuestions = generateQuestions(questionCount, isBasicOnly)
         _uiState.update { state ->
             state.copy(
                 screenState = ScreenState.QUIZ,
@@ -72,7 +79,8 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 score = 0,
                 answerRecords = emptyList(),
                 cumulativeStats = repository.getStats(),
-                questionCount = questionCount
+                questionCount = questionCount,
+                isBasicOnly = isBasicOnly
             )
         }
     }
@@ -186,9 +194,10 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         ttsHelper.shutdown()
     }
 
-    private fun generateQuestions(questionCount: Int): List<Question> {
-        val countToTake = minOf(questionCount, ALL_HIRAGANA_DATA_SET.size)
-        val shuffledHiragana = ALL_HIRAGANA_DATA_SET.shuffled().take(countToTake)
+    private fun generateQuestions(questionCount: Int, isBasicOnly: Boolean): List<Question> {
+        val dataSet = if (isBasicOnly) BASIC_HIRAGANA_DATA_SET else ALL_HIRAGANA_DATA_SET
+        val countToTake = minOf(questionCount, dataSet.size)
+        val shuffledHiragana = dataSet.shuffled().take(countToTake)
 
         return shuffledHiragana.mapIndexed { index, targetItem ->
             val questionType = if (Random.nextBoolean()) {
@@ -197,7 +206,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 QuestionType.ROMAJI_TO_HIRAGANA
             }
 
-            val distractors = generateDistractors(targetItem, questionType)
+            val distractors = generateDistractors(targetItem, questionType, isBasicOnly)
 
             when (questionType) {
                 QuestionType.HIRAGANA_TO_ROMAJI -> {
@@ -236,8 +245,9 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun generateDistractors(target: HiraganaItem, type: QuestionType): List<String> {
-        val candidates = ALL_HIRAGANA_DATA_SET.filter { it != target }
+    private fun generateDistractors(target: HiraganaItem, type: QuestionType, isBasicOnly: Boolean): List<String> {
+        val dataSet = if (isBasicOnly) BASIC_HIRAGANA_DATA_SET else ALL_HIRAGANA_DATA_SET
+        val candidates = dataSet.filter { it != target }
         val randomCandidates = candidates.shuffled().take(3)
 
         return when (type) {

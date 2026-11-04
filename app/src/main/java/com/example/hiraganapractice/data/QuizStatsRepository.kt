@@ -79,6 +79,14 @@ class QuizStatsRepository(context: Context) {
         prefs.edit().putInt(KEY_LAST_QUESTION_COUNT, count).apply()
     }
 
+    fun getLastIsBasicOnly(default: Boolean = false): Boolean {
+        return prefs.getBoolean(KEY_LAST_IS_BASIC_ONLY, default)
+    }
+
+    fun saveLastIsBasicOnly(isBasicOnly: Boolean) {
+        prefs.edit().putBoolean(KEY_LAST_IS_BASIC_ONLY, isBasicOnly).apply()
+    }
+
     companion object {
         private const val PREFS_NAME = "hiragana_quiz_stats_prefs"
         private const val KEY_TOTAL_QUIZZES = "key_total_quizzes"
@@ -87,5 +95,6 @@ class QuizStatsRepository(context: Context) {
         private const val KEY_CHAR_TOTAL_PREFIX = "key_char_total_"
         private const val KEY_CHAR_CORRECT_PREFIX = "key_char_correct_"
         private const val KEY_LAST_QUESTION_COUNT = "key_last_question_count"
+        private const val KEY_LAST_IS_BASIC_ONLY = "key_last_is_basic_only"
     }
 }

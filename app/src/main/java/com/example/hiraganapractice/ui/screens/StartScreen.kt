@@ -20,9 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,11 +47,13 @@ import com.example.hiraganapractice.ui.theme.HiraganaPracticeTheme
 @Composable
 fun StartScreen(
     initialQuestionCount: Int = 20,
-    onStartQuiz: (Int) -> Unit,
+    initialIsBasicOnly: Boolean = false,
+    onStartQuiz: (Int, Boolean) -> Unit,
     onOpenStats: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedQuestionCount by remember(initialQuestionCount) { mutableStateOf(initialQuestionCount) }
+    var isBasicOnly by remember(initialIsBasicOnly) { mutableStateOf(initialIsBasicOnly) }
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -98,16 +97,62 @@ fun StartScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "50음도, 탁음·반탁음 및 요음·촉음까지 총 81자 마스터!",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-
                 Spacer(modifier = Modifier.height(20.dp))
+
+                // Scope Selection Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "연습 범위 선택",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val scopes = listOf(
+                                false to "전체 (81자)",
+                                true to "50음도 (46자)"
+                            )
+                            scopes.forEach { (basic, label) ->
+                                val isSelected = (isBasicOnly == basic)
+                                Button(
+                                    onClick = { isBasicOnly = basic },
+                                    modifier = Modifier.weight(1f),
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = label,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        softWrap = false,
+                                        maxLines = 1,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Question Count Selection Card
                 Card(
@@ -161,39 +206,6 @@ fun StartScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Information Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(18.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = "퀴즈 안내",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        TypeFeatureRow(
-                            icon = Icons.Default.CheckCircle,
-                            title = "선택한 문항 수만큼 무작위 출제",
-                            description = "전체 학습 범위(총 81자) 내에서 랜덤으로 선정됩니다."
-                        )
-
-                        TypeFeatureRow(
-                            icon = Icons.Default.Star,
-                            title = "유형 1 & 유형 2",
-                            description = "글자 보고 로마자 맞추기 / 로마자 보고 글자 맞추기"
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -204,7 +216,7 @@ fun StartScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
-                    onClick = { onStartQuiz(selectedQuestionCount) },
+                    onClick = { onStartQuiz(selectedQuestionCount, isBasicOnly) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp),
@@ -255,49 +267,14 @@ fun StartScreen(
     }
 }
 
-@Composable
-private fun TypeFeatureRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    description: String
-) {
-    Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .padding(top = 2.dp)
-                .size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun StartScreenPreview() {
     HiraganaPracticeTheme {
         StartScreen(
             initialQuestionCount = 20,
-            onStartQuiz = {},
+            initialIsBasicOnly = false,
+            onStartQuiz = { _, _ -> },
             onOpenStats = {}
         )
     }
