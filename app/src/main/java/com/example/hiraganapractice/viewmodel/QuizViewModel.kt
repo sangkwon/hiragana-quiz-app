@@ -45,7 +45,12 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = QuizStatsRepository(application.applicationContext)
     private val ttsHelper = TextToSpeechHelper(application.applicationContext)
 
-    private val _uiState = MutableStateFlow(QuizUiState(cumulativeStats = repository.getStats()))
+    private val _uiState = MutableStateFlow(
+        QuizUiState(
+            cumulativeStats = repository.getStats(),
+            questionCount = repository.getLastQuestionCount()
+        )
+    )
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
     private var autoAdvanceJob: Job? = null
@@ -53,6 +58,8 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     fun startQuiz(questionCount: Int = _uiState.value.questionCount) {
         autoAdvanceJob?.cancel()
         autoAdvanceJob = null
+
+        repository.saveLastQuestionCount(questionCount)
 
         val generatedQuestions = generateQuestions(questionCount)
         _uiState.update { state ->

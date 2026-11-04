@@ -71,6 +71,14 @@ class QuizStatsRepository(context: Context) {
         prefs.edit().clear().apply()
     }
 
+    fun getLastQuestionCount(defaultCount: Int = 20): Int {
+        return prefs.getInt(KEY_LAST_QUESTION_COUNT, defaultCount)
+    }
+
+    fun saveLastQuestionCount(count: Int) {
+        prefs.edit().putInt(KEY_LAST_QUESTION_COUNT, count).apply()
+    }
+
     companion object {
         private const val PREFS_NAME = "hiragana_quiz_stats_prefs"
         private const val KEY_TOTAL_QUIZZES = "key_total_quizzes"
@@ -78,5 +86,6 @@ class QuizStatsRepository(context: Context) {
         private const val KEY_TOTAL_CORRECT = "key_total_correct"
         private const val KEY_CHAR_TOTAL_PREFIX = "key_char_total_"
         private const val KEY_CHAR_CORRECT_PREFIX = "key_char_correct_"
+        private const val KEY_LAST_QUESTION_COUNT = "key_last_question_count"
     }
 }
