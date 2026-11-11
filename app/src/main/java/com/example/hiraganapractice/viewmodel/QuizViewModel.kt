@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.hiraganapractice.data.QuizStatsRepository
 import com.example.hiraganapractice.model.ALL_HIRAGANA_DATA_SET
 import com.example.hiraganapractice.model.BASIC_HIRAGANA_DATA_SET
+import com.example.hiraganapractice.model.KATAKANA_DATA_SET
+import com.example.hiraganapractice.model.QuizScope
 import com.example.hiraganapractice.model.CumulativeStats
 import com.example.hiraganapractice.model.HiraganaItem
 import com.example.hiraganapractice.model.Question
@@ -33,7 +35,7 @@ data class QuizUiState(
     val answerRecords: List<UserAnswerRecord> = emptyList(),
     val cumulativeStats: CumulativeStats = CumulativeStats(),
     val questionCount: Int = 20,
-    val isBasicOnly: Boolean = false
+    val quizScope: QuizScope = QuizScope.HIRAGANA_ALL
 ) {
     val currentQuestion: Question?
         get() = questions.getOrNull(currentQuestionIndex)
@@ -51,7 +53,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         QuizUiState(
             cumulativeStats = repository.getStats(),
             questionCount = repository.getLastQuestionCount(),
-            isBasicOnly = repository.getLastIsBasicOnly()
+            quizScope = repository.getLastQuizScope()
         )
     )
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
@@ -60,15 +62,15 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startQuiz(
         questionCount: Int = _uiState.value.questionCount,
-        isBasicOnly: Boolean = _uiState.value.isBasicOnly
+        quizScope: QuizScope = _uiState.value.quizScope
     ) {
         autoAdvanceJob?.cancel()
         autoAdvanceJob = null
 
         repository.saveLastQuestionCount(questionCount)
-        repository.saveLastIsBasicOnly(isBasicOnly)
+        repository.saveLastQuizScope(quizScope)
 
-        val generatedQuestions = generateQuestions(questionCount, isBasicOnly)
+        val generatedQuestions = generateQuestions(questionCount, quizScope)
         _uiState.update { state ->
             state.copy(
                 screenState = ScreenState.QUIZ,
@@ -80,7 +82,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 answerRecords = emptyList(),
                 cumulativeStats = repository.getStats(),
                 questionCount = questionCount,
-                isBasicOnly = isBasicOnly
+                quizScope = quizScope
             )
         }
     }
@@ -194,8 +196,12 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         ttsHelper.shutdown()
     }
 
-    private fun generateQuestions(questionCount: Int, isBasicOnly: Boolean): List<Question> {
-        val dataSet = if (isBasicOnly) BASIC_HIRAGANA_DATA_SET else ALL_HIRAGANA_DATA_SET
+    private fun generateQuestions(questionCount: Int, quizScope: QuizScope): List<Question> {
+        val dataSet = when (quizScope) {
+            QuizScope.HIRAGANA_ALL -> ALL_HIRAGANA_DATA_SET
+            QuizScope.HIRAGANA_BASIC -> BASIC_HIRAGANA_DATA_SET
+            QuizScope.KATAKANA -> KATAKANA_DATA_SET
+        }
         val countToTake = minOf(questionCount, dataSet.size)
         val shuffledHiragana = dataSet.shuffled().take(countToTake)
 
@@ -206,7 +212,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 QuestionType.ROMAJI_TO_HIRAGANA
             }
 
-            val distractors = generateDistractors(targetItem, questionType, isBasicOnly)
+            val distractors = generateDistractors(targetItem, questionType, quizScope)
 
             when (questionType) {
                 QuestionType.HIRAGANA_TO_ROMAJI -> {
@@ -245,8 +251,12 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun generateDistractors(target: HiraganaItem, type: QuestionType, isBasicOnly: Boolean): List<String> {
-        val dataSet = if (isBasicOnly) BASIC_HIRAGANA_DATA_SET else ALL_HIRAGANA_DATA_SET
+    private fun generateDistractors(target: HiraganaItem, type: QuestionType, quizScope: QuizScope): List<String> {
+        val dataSet = when (quizScope) {
+            QuizScope.HIRAGANA_ALL -> ALL_HIRAGANA_DATA_SET
+            QuizScope.HIRAGANA_BASIC -> BASIC_HIRAGANA_DATA_SET
+            QuizScope.KATAKANA -> KATAKANA_DATA_SET
+        }
         val candidates = dataSet.filter { it != target }
         val randomCandidates = candidates.shuffled().take(3)
 

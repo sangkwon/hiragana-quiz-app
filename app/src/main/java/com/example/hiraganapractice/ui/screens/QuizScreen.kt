@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.hiraganapractice.model.KATAKANA_DATA_SET
 import com.example.hiraganapractice.model.Question
 import com.example.hiraganapractice.model.QuestionType
 import com.example.hiraganapractice.ui.theme.CorrectGreen
@@ -119,9 +120,11 @@ fun QuizScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Question Type Badge
+                val isKatakana = KATAKANA_DATA_SET.any { it.character == question.target.character }
+                val charTypeName = if (isKatakana) "가타카나" else "히라가나"
                 val typeText = when (question.type) {
-                    QuestionType.HIRAGANA_TO_ROMAJI -> "유형 1: 히라가나 ➔ 발음(로마자) 맞추기"
-                    QuestionType.ROMAJI_TO_HIRAGANA -> "유형 2: 발음(로마자) ➔ 히라가나 맞추기"
+                    QuestionType.HIRAGANA_TO_ROMAJI -> "유형 1: $charTypeName ➔ 발음(로마자) 맞추기"
+                    QuestionType.ROMAJI_TO_HIRAGANA -> "유형 2: 발음(로마자) ➔ $charTypeName 맞추기"
                 }
 
                 Box(

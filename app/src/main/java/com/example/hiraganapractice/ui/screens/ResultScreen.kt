@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.hiraganapractice.model.KATAKANA_DATA_SET
 import com.example.hiraganapractice.model.QuestionType
 import com.example.hiraganapractice.model.UserAnswerRecord
 import com.example.hiraganapractice.ui.theme.CorrectGreen
@@ -298,6 +299,8 @@ private fun ReviewItemCard(
 ) {
     val question = record.question
     val userSelectedText = question.options.getOrNull(record.selectedIndex) ?: ""
+    val isKatakana = KATAKANA_DATA_SET.any { it.character == question.target.character }
+    val charTypeLabel = if (isKatakana) "가타카나" else "히라가나"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -344,9 +347,9 @@ private fun ReviewItemCard(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = if (question.type == QuestionType.HIRAGANA_TO_ROMAJI) {
-                            "히라가나 '${question.target.character}' ➔ 발음: ${question.target.romaji}"
+                            "$charTypeLabel '${question.target.character}' ➔ 발음: ${question.target.romaji}"
                         } else {
-                            "발음 '${question.target.romaji}' ➔ 히라가나: ${question.target.character}"
+                            "발음 '${question.target.romaji}' ➔ $charTypeLabel: ${question.target.character}"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

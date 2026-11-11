@@ -190,7 +190,7 @@ fun StatsScreen(
                 // Header for All Characters
                 item {
                     Text(
-                        text = "히라가나 글자별 정답률",
+                        text = "글자별 정답률 (히라가나 및 가타카나)",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground

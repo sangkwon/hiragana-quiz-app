@@ -2,7 +2,9 @@ package com.example.hiraganapractice.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.hiraganapractice.model.HIRAGANA_DATA_SET
+import com.example.hiraganapractice.model.ALL_HIRAGANA_DATA_SET
+import com.example.hiraganapractice.model.KATAKANA_DATA_SET
+import com.example.hiraganapractice.model.QuizScope
 import com.example.hiraganapractice.model.CharacterStat
 import com.example.hiraganapractice.model.CumulativeStats
 import com.example.hiraganapractice.model.UserAnswerRecord
@@ -19,7 +21,8 @@ class QuizStatsRepository(context: Context) {
         val questionsAnswered = prefs.getInt(KEY_TOTAL_QUESTIONS, 0)
         val correctAnswers = prefs.getInt(KEY_TOTAL_CORRECT, 0)
 
-        val charStats = HIRAGANA_DATA_SET.map { item ->
+        val allItems = ALL_HIRAGANA_DATA_SET + KATAKANA_DATA_SET
+        val charStats = allItems.map { item ->
             val total = prefs.getInt(KEY_CHAR_TOTAL_PREFIX + item.character, 0)
             val correct = prefs.getInt(KEY_CHAR_CORRECT_PREFIX + item.character, 0)
             CharacterStat(
@@ -79,12 +82,17 @@ class QuizStatsRepository(context: Context) {
         prefs.edit().putInt(KEY_LAST_QUESTION_COUNT, count).apply()
     }
 
-    fun getLastIsBasicOnly(default: Boolean = false): Boolean {
-        return prefs.getBoolean(KEY_LAST_IS_BASIC_ONLY, default)
+    fun getLastQuizScope(defaultScope: QuizScope = QuizScope.HIRAGANA_ALL): QuizScope {
+        val scopeName = prefs.getString(KEY_LAST_QUIZ_SCOPE, defaultScope.name)
+        return try {
+            QuizScope.valueOf(scopeName ?: defaultScope.name)
+        } catch (e: Exception) {
+            defaultScope
+        }
     }
 
-    fun saveLastIsBasicOnly(isBasicOnly: Boolean) {
-        prefs.edit().putBoolean(KEY_LAST_IS_BASIC_ONLY, isBasicOnly).apply()
+    fun saveLastQuizScope(scope: QuizScope) {
+        prefs.edit().putString(KEY_LAST_QUIZ_SCOPE, scope.name).apply()
     }
 
     companion object {
@@ -95,6 +103,6 @@ class QuizStatsRepository(context: Context) {
         private const val KEY_CHAR_TOTAL_PREFIX = "key_char_total_"
         private const val KEY_CHAR_CORRECT_PREFIX = "key_char_correct_"
         private const val KEY_LAST_QUESTION_COUNT = "key_last_question_count"
-        private const val KEY_LAST_IS_BASIC_ONLY = "key_last_is_basic_only"
+        private const val KEY_LAST_QUIZ_SCOPE = "key_last_quiz_scope"
     }
 }

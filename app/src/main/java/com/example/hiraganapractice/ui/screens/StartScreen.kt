@@ -42,18 +42,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.hiraganapractice.model.QuizScope
 import com.example.hiraganapractice.ui.theme.HiraganaPracticeTheme
 
 @Composable
 fun StartScreen(
     initialQuestionCount: Int = 20,
-    initialIsBasicOnly: Boolean = false,
-    onStartQuiz: (Int, Boolean) -> Unit,
+    initialQuizScope: QuizScope = QuizScope.HIRAGANA_ALL,
+    onStartQuiz: (Int, QuizScope) -> Unit,
     onOpenStats: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedQuestionCount by remember(initialQuestionCount) { mutableStateOf(initialQuestionCount) }
-    var isBasicOnly by remember(initialIsBasicOnly) { mutableStateOf(initialIsBasicOnly) }
+    var selectedQuizScope by remember(initialQuizScope) { mutableStateOf(initialQuizScope) }
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -120,18 +121,19 @@ fun StartScreen(
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             val scopes = listOf(
-                                false to "전체 (81자)",
-                                true to "50음도 (46자)"
+                                QuizScope.HIRAGANA_ALL to "히라가나 전체",
+                                QuizScope.HIRAGANA_BASIC to "히라가나 50음도",
+                                QuizScope.KATAKANA to "가타카나"
                             )
-                            scopes.forEach { (basic, label) ->
-                                val isSelected = (isBasicOnly == basic)
+                            scopes.forEach { (scope, label) ->
+                                val isSelected = (selectedQuizScope == scope)
                                 Button(
-                                    onClick = { isBasicOnly = basic },
+                                    onClick = { selectedQuizScope = scope },
                                     modifier = Modifier.weight(1f),
-                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
+                                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 10.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                                         contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
@@ -141,7 +143,7 @@ fun StartScreen(
                                     Text(
                                         text = label,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
+                                        fontSize = 11.sp,
                                         softWrap = false,
                                         maxLines = 1,
                                         textAlign = TextAlign.Center
@@ -216,7 +218,7 @@ fun StartScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
-                    onClick = { onStartQuiz(selectedQuestionCount, isBasicOnly) },
+                    onClick = { onStartQuiz(selectedQuestionCount, selectedQuizScope) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp),
@@ -273,7 +275,7 @@ fun StartScreenPreview() {
     HiraganaPracticeTheme {
         StartScreen(
             initialQuestionCount = 20,
-            initialIsBasicOnly = false,
+            initialQuizScope = QuizScope.HIRAGANA_ALL,
             onStartQuiz = { _, _ -> },
             onOpenStats = {}
         )

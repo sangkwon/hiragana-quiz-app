@@ -163,10 +163,85 @@ val YOON_AND_SOKUON_DATA_SET = listOf(
 
 val ALL_HIRAGANA_DATA_SET = BASIC_HIRAGANA_DATA_SET + DAKUTEN_HIRAGANA_DATA_SET + YOON_AND_SOKUON_DATA_SET
 
+val KATAKANA_DATA_SET = listOf(
+    // ア행
+    HiraganaItem("ア", "a", "ア행"),
+    HiraganaItem("イ", "i", "ア행"),
+    HiraganaItem("ウ", "u", "ア행"),
+    HiraganaItem("エ", "e", "ア행"),
+    HiraganaItem("オ", "o", "ア행"),
+
+    // カ행
+    HiraganaItem("カ", "ka", "カ행"),
+    HiraganaItem("キ", "ki", "カ행"),
+    HiraganaItem("ク", "ku", "カ행"),
+    HiraganaItem("ケ", "ke", "カ행"),
+    HiraganaItem("コ", "ko", "カ행"),
+
+    // サ행
+    HiraganaItem("サ", "sa", "サ행"),
+    HiraganaItem("シ", "shi", "サ행"),
+    HiraganaItem("ス", "su", "サ행"),
+    HiraganaItem("セ", "se", "サ행"),
+    HiraganaItem("ソ", "so", "サ행"),
+
+    // タ행
+    HiraganaItem("タ", "ta", "タ행"),
+    HiraganaItem("チ", "chi", "タ행"),
+    HiraganaItem("ツ", "tsu", "タ행"),
+    HiraganaItem("テ", "te", "タ행"),
+    HiraganaItem("ト", "to", "タ행"),
+
+    // ナ행
+    HiraganaItem("ナ", "na", "ナ행"),
+    HiraganaItem("ニ", "ni", "ナ행"),
+    HiraganaItem("ヌ", "nu", "ナ행"),
+    HiraganaItem("ネ", "ne", "ナ행"),
+    HiraganaItem("ノ", "no", "ナ행"),
+
+    // ハ행
+    HiraganaItem("ハ", "ha", "ハ행"),
+    HiraganaItem("ヒ", "hi", "ハ행"),
+    HiraganaItem("フ", "fu", "ハ행"),
+    HiraganaItem("ヘ", "he", "ハ행"),
+    HiraganaItem("ホ", "ho", "ハ행"),
+
+    // マ행
+    HiraganaItem("マ", "ma", "マ행"),
+    HiraganaItem("ミ", "mi", "マ행"),
+    HiraganaItem("ム", "mu", "マ행"),
+    HiraganaItem("メ", "me", "マ행"),
+    HiraganaItem("モ", "mo", "マ행"),
+
+    // ヤ행
+    HiraganaItem("ヤ", "ya", "ヤ행"),
+    HiraganaItem("ユ", "yu", "ヤ행"),
+    HiraganaItem("ヨ", "yo", "ヤ행"),
+
+    // ラ행
+    HiraganaItem("ラ", "ra", "ラ행"),
+    HiraganaItem("リ", "ri", "ラ행"),
+    HiraganaItem("ル", "ru", "ラ행"),
+    HiraganaItem("レ", "re", "ラ행"),
+    HiraganaItem("ロ", "ro", "ラ행"),
+
+    // ワ행 & ン
+    HiraganaItem("ワ", "wa", "ワ행"),
+    HiraganaItem("ヲ", "wo", "ワ행"),
+    HiraganaItem("ン", "n", "ン")
+)
+
 val HIRAGANA_DATA_SET = ALL_HIRAGANA_DATA_SET
 
+enum class QuizScope {
+    HIRAGANA_ALL,
+    HIRAGANA_BASIC,
+    KATAKANA
+}
+
 fun getHiraganaText(text: String): String {
-    return ALL_HIRAGANA_DATA_SET.find { it.romaji.lowercase() == text.lowercase() }?.character
-        ?: ALL_HIRAGANA_DATA_SET.find { it.character == text }?.character
+    val combinedSet = ALL_HIRAGANA_DATA_SET + KATAKANA_DATA_SET
+    return combinedSet.find { it.romaji.lowercase() == text.lowercase() }?.character
+        ?: combinedSet.find { it.character == text }?.character
         ?: text
 }
