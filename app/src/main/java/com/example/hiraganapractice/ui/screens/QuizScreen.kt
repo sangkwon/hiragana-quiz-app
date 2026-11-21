@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -161,6 +162,7 @@ fun QuizScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = question.prompt,
+                                modifier = Modifier.testTag("question_prompt"),
                                 fontSize = 56.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -185,6 +187,7 @@ fun QuizScreen(
                 ) {
                     question.options.forEachIndexed { index, option ->
                         OptionCard(
+                            modifier = Modifier.testTag("option_$index"),
                             optionText = option,
                             isSelected = selectedOptionIndex == index,
                             isCorrectOption = index == question.correctAnswerIndex,
@@ -285,6 +288,7 @@ fun QuizScreen(
 
 @Composable
 private fun OptionCard(
+    modifier: Modifier = Modifier,
     optionText: String,
     isSelected: Boolean,
     isCorrectOption: Boolean,
@@ -319,7 +323,7 @@ private fun OptionCard(
     )
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
             .clip(RoundedCornerShape(16.dp))
