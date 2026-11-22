@@ -1,9 +1,13 @@
 package com.example.hiraganapractice.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.hiraganapractice.data.QuizStatsRepository
+import com.example.hiraganapractice.data.StatsRepository
 import com.example.hiraganapractice.model.ALL_HIRAGANA_DATA_SET
 import com.example.hiraganapractice.model.BASIC_HIRAGANA_DATA_SET
 import com.example.hiraganapractice.model.KATAKANA_DATA_SET
@@ -15,6 +19,7 @@ import com.example.hiraganapractice.model.QuestionType
 import com.example.hiraganapractice.model.ScreenState
 import com.example.hiraganapractice.model.UserAnswerRecord
 import com.example.hiraganapractice.model.getHiraganaText
+import com.example.hiraganapractice.utils.Speaker
 import com.example.hiraganapractice.utils.TextToSpeechHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -44,10 +49,15 @@ data class QuizUiState(
         get() = questions.size
 }
 
-class QuizViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository = QuizStatsRepository(application.applicationContext)
-    private val ttsHelper = TextToSpeechHelper(application.applicationContext)
+/**
+ * 의존성(저장소, 음성)을 직접 만들지 않고 생성자로 "주입"받는다.
+ * - 앱에서는 [Factory]가 실제 구현(SharedPreferences, TextToSpeech)을 넣어 준다.
+ * - 테스트에서는 가짜 구현을 넣어, Android/Robolectric 없이 순수 JVM에서 돌린다.
+ */
+class QuizViewModel(
+    private val repository: StatsRepository,
+    private val ttsHelper: Speaker
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         QuizUiState(
@@ -268,5 +278,20 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private const val AUTO_ADVANCE_DELAY_MS = 1000L
+
+        /**
+         * ViewModel에 생성자 인자가 생기면 시스템이 스스로 만들 수 없으므로,
+         * "어떻게 만드는지"를 알려 주는 Factory가 필요하다.
+         * Application은 ViewModel을 만드는 순간 CreationExtras에서 꺼내 쓴다.
+         */
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = checkNotNull(this[APPLICATION_KEY])
+                QuizViewModel(
+                    repository = QuizStatsRepository(app),
+                    ttsHelper = TextToSpeechHelper(app)
+                )
+            }
+        }
     }
 }

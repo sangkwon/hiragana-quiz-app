@@ -4,7 +4,7 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import java.util.Locale
 
-class TextToSpeechHelper(context: Context) {
+class TextToSpeechHelper(context: Context) : Speaker {
     private var tts: TextToSpeech? = null
     private var isInitialized = false
 
@@ -19,13 +19,13 @@ class TextToSpeechHelper(context: Context) {
         }
     }
 
-    fun speak(text: String) {
+    override fun speak(text: String) {
         if (isInitialized) {
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "hiragana_tts_id")
         }
     }
 
-    fun shutdown() {
+    override fun shutdown() {
         tts?.stop()
         tts?.shutdown()
         tts = null
