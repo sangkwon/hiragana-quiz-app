@@ -197,11 +197,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun generateQuestions(questionCount: Int, quizScope: QuizScope): List<Question> {
-        val dataSet = when (quizScope) {
-            QuizScope.HIRAGANA_ALL -> ALL_HIRAGANA_DATA_SET
-            QuizScope.HIRAGANA_BASIC -> BASIC_HIRAGANA_DATA_SET
-            QuizScope.KATAKANA -> KATAKANA_DATA_SET
-        }
+        val dataSet = dataSetFor(quizScope)
         val countToTake = minOf(questionCount, dataSet.size)
         val shuffledHiragana = dataSet.shuffled().take(countToTake)
 
@@ -212,7 +208,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 QuestionType.ROMAJI_TO_HIRAGANA
             }
 
-            val distractors = generateDistractors(targetItem, questionType, quizScope)
+            val distractors = generateDistractors(targetItem, questionType, dataSet)
 
             when (questionType) {
                 QuestionType.HIRAGANA_TO_ROMAJI -> {
@@ -251,22 +247,34 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun generateDistractors(target: HiraganaItem, type: QuestionType, quizScope: QuizScope): List<String> {
-        val dataSet = when (quizScope) {
-            QuizScope.HIRAGANA_ALL -> ALL_HIRAGANA_DATA_SET
-            QuizScope.HIRAGANA_BASIC -> BASIC_HIRAGANA_DATA_SET
-            QuizScope.KATAKANA -> KATAKANA_DATA_SET
-        }
-        val candidates = dataSet.filter { it != target }
-        val randomCandidates = candidates.shuffled().take(3)
-
-        return when (type) {
-            QuestionType.HIRAGANA_TO_ROMAJI -> randomCandidates.map { it.romaji }
-            QuestionType.ROMAJI_TO_HIRAGANA -> randomCandidates.map { it.character }
-        }
-    }
-
     companion object {
         private const val AUTO_ADVANCE_DELAY_MS = 1000L
     }
+}
+
+internal fun dataSetFor(quizScope: QuizScope): List<HiraganaItem> = when (quizScope) {
+    QuizScope.HIRAGANA_ALL -> ALL_HIRAGANA_DATA_SET
+    QuizScope.HIRAGANA_BASIC -> BASIC_HIRAGANA_DATA_SET
+    QuizScope.KATAKANA -> KATAKANA_DATA_SET
+}
+
+/**
+ * 정답(target)을 제외한 오답 보기 3개를 만든다.
+ * random을 인자로 받아, 테스트에서 시드를 고정해 결과를 재현할 수 있게 한다.
+ */
+internal fun generateDistractors(
+    target: HiraganaItem,
+    type: QuestionType,
+    dataSet: List<HiraganaItem>,
+    random: Random = Random.Default
+): List<String> {
+    // じ/ぢ("ji"), ず/づ("zu")처럼 정답과 발음이 같은 글자는 오답이 될 수 없으므로 후보에서 뺀다.
+    val candidates = dataSet.filter { it.romaji != target.romaji }
+
+    // 오답끼리도 보기 문자열이 겹치지 않도록 중복을 없앤 뒤 3개를 고른다.
+    val options = when (type) {
+        QuestionType.HIRAGANA_TO_ROMAJI -> candidates.map { it.romaji }
+        QuestionType.ROMAJI_TO_HIRAGANA -> candidates.map { it.character }
+    }
+    return options.distinct().shuffled(random).take(3)
 }
