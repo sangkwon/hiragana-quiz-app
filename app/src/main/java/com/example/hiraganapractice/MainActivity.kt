@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HiraganaQuizApp(
-    viewModel: QuizViewModel = viewModel()
+    viewModel: QuizViewModel = viewModel(factory = QuizViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

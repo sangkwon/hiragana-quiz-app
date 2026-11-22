@@ -9,14 +9,14 @@ import com.example.hiraganapractice.model.CharacterStat
 import com.example.hiraganapractice.model.CumulativeStats
 import com.example.hiraganapractice.model.UserAnswerRecord
 
-class QuizStatsRepository(context: Context) {
+class QuizStatsRepository(context: Context) : StatsRepository {
 
     private val prefs: SharedPreferences = context.getSharedPreferences(
         PREFS_NAME,
         Context.MODE_PRIVATE
     )
 
-    fun getStats(): CumulativeStats {
+    override fun getStats(): CumulativeStats {
         val quizzesCompleted = prefs.getInt(KEY_TOTAL_QUIZZES, 0)
         val questionsAnswered = prefs.getInt(KEY_TOTAL_QUESTIONS, 0)
         val correctAnswers = prefs.getInt(KEY_TOTAL_CORRECT, 0)
@@ -41,7 +41,7 @@ class QuizStatsRepository(context: Context) {
         )
     }
 
-    fun saveQuizResult(answerRecords: List<UserAnswerRecord>) {
+    override fun saveQuizResult(answerRecords: List<UserAnswerRecord>) {
         if (answerRecords.isEmpty()) return
 
         val currentQuizzes = prefs.getInt(KEY_TOTAL_QUIZZES, 0)
@@ -74,7 +74,7 @@ class QuizStatsRepository(context: Context) {
      * 누적 통계(총 퀴즈/문제/정답 수, 글자별 통계)만 삭제한다.
      * 마지막으로 고른 문제 수·출제 범위 같은 설정 값은 유지한다.
      */
-    fun clearStats() {
+    override fun clearStats() {
         val editor = prefs.edit()
         editor.remove(KEY_TOTAL_QUIZZES)
         editor.remove(KEY_TOTAL_QUESTIONS)
@@ -86,15 +86,15 @@ class QuizStatsRepository(context: Context) {
         editor.apply()
     }
 
-    fun getLastQuestionCount(defaultCount: Int = 20): Int {
+    override fun getLastQuestionCount(defaultCount: Int): Int {
         return prefs.getInt(KEY_LAST_QUESTION_COUNT, defaultCount)
     }
 
-    fun saveLastQuestionCount(count: Int) {
+    override fun saveLastQuestionCount(count: Int) {
         prefs.edit().putInt(KEY_LAST_QUESTION_COUNT, count).apply()
     }
 
-    fun getLastQuizScope(defaultScope: QuizScope = QuizScope.HIRAGANA_ALL): QuizScope {
+    override fun getLastQuizScope(defaultScope: QuizScope): QuizScope {
         val scopeName = prefs.getString(KEY_LAST_QUIZ_SCOPE, defaultScope.name)
         return try {
             QuizScope.valueOf(scopeName ?: defaultScope.name)
@@ -103,7 +103,7 @@ class QuizStatsRepository(context: Context) {
         }
     }
 
-    fun saveLastQuizScope(scope: QuizScope) {
+    override fun saveLastQuizScope(scope: QuizScope) {
         prefs.edit().putString(KEY_LAST_QUIZ_SCOPE, scope.name).apply()
     }
 
