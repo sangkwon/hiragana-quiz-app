@@ -1,7 +1,7 @@
 # HiraganaPractice
 
 히라가나/가타카나 퀴즈 안드로이드 앱 (Kotlin, Jetpack Compose, 단일 `app` 모듈).
-구조: `QuizViewModel` (상태/로직) ← `QuizStatsRepository` (SharedPreferences) / `TextToSpeechHelper`.
+구조: `QuizViewModel` (상태/로직)은 생성자로 `StatsRepository`·`Speaker` 인터페이스를 주입받는다. 실제 구현은 `QuizStatsRepository` (SharedPreferences) / `TextToSpeechHelper`이고, `QuizViewModel.Factory`가 앱에서 이를 조립한다.
 
 ## 빌드·검증 명령
 
@@ -30,5 +30,6 @@ UI 테스트용 에뮬레이터 부팅 (헤드리스):
 - 로직(ViewModel, Repository, 데이터셋)을 바꾸면 해당 테스트도 함께 추가/수정한다.
 - 테스트가 실패하면 테스트를 약하게 고치기 전에, 코드 변경이 의도한 동작 변화인지 먼저 판단하고 보고한다.
 - 테스트는 `app/src/test/java/com/example/hiraganapractice/` 아래에 둔다.
+- ViewModel 테스트는 Robolectric 없이 `fake/`의 `FakeStatsRepository`·`FakeSpeaker`를 주입하는 순수 JVM 테스트로 쓴다. Robolectric은 Android API를 실제로 쓰는 `QuizStatsRepositoryTest`에만 사용한다.
 - UI 테스트는 `app/src/androidTest/.../QuizFlowTest.kt`. 화면 텍스트(한국어)와 `testTag`(`question_prompt`, `option_0..3`)로 요소를 찾는다. 문구를 바꾸면 테스트도 함께 수정한다.
 - 퀴즈 정답은 무작위라, UI 테스트는 `BASIC_HIRAGANA_DATA_SET`에서 정답 보기를 계산해 누른다.

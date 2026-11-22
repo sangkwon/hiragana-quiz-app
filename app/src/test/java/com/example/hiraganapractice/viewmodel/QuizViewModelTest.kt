@@ -1,12 +1,12 @@
 package com.example.hiraganapractice.viewmodel
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
-import com.example.hiraganapractice.data.QuizStatsRepository
+import com.example.hiraganapractice.fake.FakeSpeaker
+import com.example.hiraganapractice.fake.FakeStatsRepository
 import com.example.hiraganapractice.model.BASIC_HIRAGANA_DATA_SET
 import com.example.hiraganapractice.model.KATAKANA_DATA_SET
 import com.example.hiraganapractice.model.QuizScope
 import com.example.hiraganapractice.model.ScreenState
+import com.example.hiraganapractice.model.getHiraganaText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -21,23 +21,24 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
+/**
+ * 순수 JVM 단위 테스트. Robolectric 없이, 가짜 저장소/Speaker를 생성자로 주입한다.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(RobolectricTestRunner::class)
 class QuizViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
-    private lateinit var app: Application
+    private lateinit var repository: FakeStatsRepository
+    private lateinit var speaker: FakeSpeaker
     private lateinit var vm: QuizViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        app = ApplicationProvider.getApplicationContext()
-        QuizStatsRepository(app).clearStats()
-        vm = QuizViewModel(app)
+        repository = FakeStatsRepository()
+        speaker = FakeSpeaker()
+        vm = QuizViewModel(repository, speaker)
     }
 
     @After
@@ -178,9 +179,55 @@ class QuizViewModelTest {
     fun `last settings are restored by a new view model`() {
         vm.startQuiz(7, QuizScope.KATAKANA)
 
-        val vm2 = QuizViewModel(app)
+        // 같은 저장소를 공유하는 새 ViewModel = 앱을 다시 켠 상황
+        val vm2 = QuizViewModel(repository, FakeSpeaker())
         assertEquals(7, vm2.uiState.value.questionCount)
         assertEquals(QuizScope.KATAKANA, vm2.uiState.value.quizScope)
         assertNotEquals(QuizScope.HIRAGANA_ALL, vm2.uiState.value.quizScope)
+    }
+
+    // ---- 의존성 주입 덕분에 새로 가능해진 테스트 ----
+
+    @Test
+    fun `initial state reads saved settings and stats from repository`() {
+        repository.saveLastQuestionCount(15)
+        repository.saveLastQuizScope(QuizScope.HIRAGANA_BASIC)
+
+        val fresh = QuizViewModel(repository, speaker).uiState.value
+        assertEquals(15, fresh.questionCount)
+        assertEquals(QuizScope.HIRAGANA_BASIC, fresh.quizScope)
+    }
+
+    @Test
+    fun `selecting an option speaks its hiragana`() {
+        vm.startQuiz(1, QuizScope.HIRAGANA_BASIC)
+        val q = state.currentQuestion!!
+        val chosen = q.options[q.correctAnswerIndex]
+
+        vm.selectOption(q.correctAnswerIndex)
+
+        assertEquals(listOf(getHiraganaText(chosen)), speaker.spokenTexts)
+        // 이미 답한 문제를 다시 누르면 읽지 않는다
+        vm.selectOption(wrongIndex())
+        assertEquals(1, speaker.spokenTexts.size)
+    }
+
+    @Test
+    fun `speakText converts romaji to hiragana before speaking`() {
+        vm.speakText("ka")
+        assertEquals(listOf("か"), speaker.spokenTexts)
+    }
+
+    @Test
+    fun `quiz result is saved exactly once when the quiz ends`() {
+        vm.startQuiz(2, QuizScope.HIRAGANA_BASIC)
+        vm.selectOption(state.currentQuestion!!.correctAnswerIndex)
+        vm.nextQuestion()
+        assertEquals(0, repository.saveQuizResultCallCount)
+
+        vm.selectOption(wrongIndex())
+        vm.nextQuestion()
+        assertEquals(1, repository.saveQuizResultCallCount)
+        assertEquals(1, repository.getStats().totalCorrectAnswers)
     }
 }
