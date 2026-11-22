@@ -268,11 +268,13 @@ internal fun generateDistractors(
     dataSet: List<HiraganaItem>,
     random: Random = Random.Default
 ): List<String> {
-    val candidates = dataSet.filter { it != target }
-    val randomCandidates = candidates.shuffled(random).take(3)
+    // じ/ぢ("ji"), ず/づ("zu")처럼 정답과 발음이 같은 글자는 오답이 될 수 없으므로 후보에서 뺀다.
+    val candidates = dataSet.filter { it.romaji != target.romaji }
 
-    return when (type) {
-        QuestionType.HIRAGANA_TO_ROMAJI -> randomCandidates.map { it.romaji }
-        QuestionType.ROMAJI_TO_HIRAGANA -> randomCandidates.map { it.character }
+    // 오답끼리도 보기 문자열이 겹치지 않도록 중복을 없앤 뒤 3개를 고른다.
+    val options = when (type) {
+        QuestionType.HIRAGANA_TO_ROMAJI -> candidates.map { it.romaji }
+        QuestionType.ROMAJI_TO_HIRAGANA -> candidates.map { it.character }
     }
+    return options.distinct().shuffled(random).take(3)
 }
