@@ -77,11 +77,43 @@ class QuizStatsRepositoryTest {
     }
 
     @Test
-    fun `clearStats resets everything`() {
+    fun `clearStats resets all stats`() {
+        repo.saveQuizResult(listOf(record(0, true), record(1, false)))
+        repo.clearStats()
+
+        val s = repo.getStats()
+        assertEquals(0, s.totalQuizzesCompleted)
+        assertEquals(0, s.totalQuestionsAnswered)
+        assertEquals(0, s.totalCorrectAnswers)
+        assertEquals(0, s.characterStatsList.sumOf { it.totalCount })
+        assertEquals(0, s.characterStatsList.sumOf { it.correctCount })
+    }
+
+    @Test
+    fun `clearStats keeps last question count and scope`() {
+        repo.saveLastQuestionCount(10)
+        repo.saveLastQuizScope(QuizScope.KATAKANA)
+        repo.saveQuizResult(listOf(record(0, true)))
+
+        repo.clearStats()
+
+        assertEquals(10, repo.getLastQuestionCount())
+        assertEquals(QuizScope.KATAKANA, repo.getLastQuizScope())
+    }
+
+    @Test
+    fun `stats accumulate again from zero after clearStats`() {
         repo.saveQuizResult(listOf(record(0, true)))
         repo.clearStats()
-        assertEquals(0, repo.getStats().totalQuizzesCompleted)
-        assertEquals(0, repo.getStats().characterStatsList.sumOf { it.totalCount })
+        repo.saveQuizResult(listOf(record(0, false)))
+
+        val s = repo.getStats()
+        assertEquals(1, s.totalQuizzesCompleted)
+        assertEquals(1, s.totalQuestionsAnswered)
+        assertEquals(0, s.totalCorrectAnswers)
+        val a = s.characterStatsList.first { it.character == BASIC_HIRAGANA_DATA_SET[0].character }
+        assertEquals(1, a.totalCount)
+        assertEquals(0, a.correctCount)
     }
 
     @Test

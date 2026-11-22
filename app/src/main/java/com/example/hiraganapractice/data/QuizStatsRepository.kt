@@ -70,8 +70,20 @@ class QuizStatsRepository(context: Context) : StatsRepository {
         editor.apply()
     }
 
+    /**
+     * 누적 통계(총 퀴즈/문제/정답 수, 글자별 통계)만 삭제한다.
+     * 마지막으로 고른 문제 수·출제 범위 같은 설정 값은 유지한다.
+     */
     override fun clearStats() {
-        prefs.edit().clear().apply()
+        val editor = prefs.edit()
+        editor.remove(KEY_TOTAL_QUIZZES)
+        editor.remove(KEY_TOTAL_QUESTIONS)
+        editor.remove(KEY_TOTAL_CORRECT)
+        // 데이터셋에서 빠진 글자의 기록도 남지 않도록, 저장된 키를 접두사로 찾아 지운다.
+        prefs.all.keys
+            .filter { it.startsWith(KEY_CHAR_TOTAL_PREFIX) || it.startsWith(KEY_CHAR_CORRECT_PREFIX) }
+            .forEach { editor.remove(it) }
+        editor.apply()
     }
 
     override fun getLastQuestionCount(defaultCount: Int): Int {

@@ -14,6 +14,7 @@ import com.example.hiraganapractice.model.UserAnswerRecord
 interface StatsRepository {
     fun getStats(): CumulativeStats
     fun saveQuizResult(answerRecords: List<UserAnswerRecord>)
+    /** 누적 통계만 지운다. 마지막 문제 수·범위 설정은 유지한다. */
     fun clearStats()
     fun getLastQuestionCount(defaultCount: Int = 20): Int
     fun saveLastQuestionCount(count: Int)

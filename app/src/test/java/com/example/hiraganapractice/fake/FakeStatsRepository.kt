@@ -51,8 +51,7 @@ class FakeStatsRepository : StatsRepository {
     override fun clearStats() {
         quizzesCompleted = 0
         records.clear()
-        lastQuestionCount = null
-        lastQuizScope = null
+        // 실제 구현과 같게, 마지막 문제 수·범위 설정은 유지한다.
     }
 
     override fun getLastQuestionCount(defaultCount: Int): Int = lastQuestionCount ?: defaultCount
